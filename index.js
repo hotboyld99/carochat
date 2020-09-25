@@ -28,6 +28,11 @@ io.on("connection", (socket) => {
         ++numUsers;
         addedUser = true;
 
+        socket.emit("login", {
+            users: users,
+            numUsers: numUsers,
+        });
+
         socket.broadcast.emit("user joined", {
             users: users,
             username: socket.username,
