@@ -9,34 +9,30 @@ server.listen(port, () => {
 });
 
 var users = [];
-var numUsers = 0;
 
 io.on("connection", (socket) => {
     var addedUser = false;
 
-    socket.on("new message", (data) => {
-        socket.broadcast.emit("new message", {
-            username: socket.username,
-            message: data,
-        });
-    });
-
     socket.on("add user", (username) => {
         if (addedUser) return;
         socket.username = username;
-        users[numUsers] = username;
-        ++numUsers;
+        users.push(username);
         addedUser = true;
 
         socket.emit("login", {
             users: users,
-            numUsers: numUsers,
         });
 
         socket.broadcast.emit("user joined", {
             users: users,
             username: socket.username,
-            numUsers: numUsers,
+        });
+    });
+
+    socket.on("new message", (message) => {
+        socket.broadcast.emit("new message", {
+            username: socket.username,
+            message: message,
         });
     });
 
@@ -54,11 +50,9 @@ io.on("connection", (socket) => {
 
     socket.on("disconnect", () => {
         if (addedUser) {
-            --numUsers;
-
             socket.broadcast.emit("user left", {
                 username: socket.username,
-                numUsers: numUsers,
+                users: users,
             });
         }
     });
